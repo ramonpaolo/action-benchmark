@@ -20,9 +20,9 @@ inputs:
     default: '0.1'
 
   base-latency:
-    description: 'The base in ms(milliseconds) of acceptable latency'
+    description: 'The base latency to calculate the desviation in ms(milliseconds) of acceptable latency'
     required: false
-    default: '{"avg": 80, "max": 100, "min": 70, "P90": 80, "P95": 90}'
+    default: '{"AVG": 80, "MAX": 100, "MIN": 70, "P90": 80, "P95": 90}'
 
 outputs:
   message:

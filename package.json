@@ -4,11 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start:dev": "node --watch index.js",
+    "start:dev": "node -r dotenv/config --watch index.js",
     "build": "ncc build index.js --license licenses.txt"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24"
+    "@types/node": "^20.11.24",
+    "dotenv": "^16.4.5"
   },
   "dependencies": {
     "@actions/core": "^1.10.1",

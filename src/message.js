@@ -14,33 +14,47 @@ const replaceTags = (tag, value, file, emoji) => {
   return file.replace(`{{ ${tag} }}`, `${value}`)
 }
 
+const createTags = (arr, obj, prefix, sufix, base_latency, desviation_latency) => {
+  for (const [key, value] of Object.entries(obj)) {
+    const sanitizedKey = key.toUpperCase().replace('(', '').replace(')', '')
+
+    const tagName = `${prefix}_${sanitizedKey}`
+    const tagValue = `${value.toFixed(2)}${sufix}`
+
+    let emoji = null;
+
+    if (prefix === 'LATENCY')
+      emoji = value - (base_latency[sanitizedKey] * desviation_latency) <= base_latency[sanitizedKey] ? '✅' : '🙅🏼'
+
+    arr.push([tagName, tagValue, emoji])
+  }
+
+  return arr;
+}
+
 const buildMessage = ({ vus, http_reqs, http_req_failed, http_req_duration }, { desviation_error, desviation_latency, base_latency, }) => {
   const currentDirectory = cwd()
 
   const pathMessageTemplate = resolve(currentDirectory, 'markdown', 'MESSAGE_TEMPLATE.md')
 
-  const messages = [
-    ['MAX_VUS', vus.values.max, null],
-    ['MIN_VUS', vus.values.min, null],
-    ['TOTAL_TIME', (http_reqs.values.count / http_reqs.values.rate).toFixed(0) + 's', null],
-    ['DESVIATION', desviation_latency * 100, null],
-    ['RPS', +http_reqs.values.rate.toFixed(0), null],
-    ['TOTAL_REQUESTS', http_reqs.values.count, null],
-    ['FAILED_REQUESTS', http_req_failed.values.passes, null],
-    ['PERCENTAGE_ERROR', http_req_failed.values.rate == 1
-      ? +http_req_failed.values.rate.toFixed(2).replace('.', '') : +http_req_failed.values.rate.toFixed(2).split('.')[1], http_req_failed.values.rate <= desviation_error ? '✅' : '🙅🏼'],
-    ['LATENCY_AVG', http_req_duration.values.avg.toFixed(2) + 'ms', http_req_duration.values.avg - (base_latency.avg * desviation_latency) <= base_latency.avg ? '✅' : '🙅🏼'],
-    ['LATENCY_MAX', http_req_duration.values.max.toFixed(2) + 'ms', http_req_duration.values.max - (base_latency.max * desviation_latency) <= base_latency.max ? '✅' : '🙅🏼'],
-    ['LATENCY_MIN', http_req_duration.values.min.toFixed(2) + 'ms', http_req_duration.values.min - (base_latency.min * desviation_latency) <= base_latency.min ? '✅' : '🙅🏼'],
-    ['LATENCY_P90', http_req_duration.values['p(90)'].toFixed(2) + 'ms', http_req_duration.values['p(90)'] - (base_latency['P90'] * desviation_latency) <= base_latency['P90'] ? '✅' : '🙅🏼'],
-    ['LATENCY_P95', http_req_duration.values['p(95)'].toFixed(2) + 'ms', http_req_duration.values['p(95)'] - (base_latency['P95'] * desviation_latency) <= base_latency['P95'] ? '✅' : '🙅🏼'],
-  ]
+  let arr = []
+
+  createTags(arr, http_req_duration.values, 'LATENCY', 'ms', base_latency, desviation_latency)
+  createTags(arr, http_req_failed.values, 'HTTP_FAILED', '')
+  createTags(arr, http_reqs.values, 'HTTP', '')
+  createTags(arr, vus.values, 'VUS', '')
+
+
+  arr.push(['TOTAL_TIME', (http_reqs.values.count / http_reqs.values.rate).toFixed(0) + 's', null])
+  arr.push(['DESVIATION', desviation_latency * 100, null])
+  arr.push(['PERCENTAGE_ERROR', http_req_failed.values.rate == 1
+    ? +http_req_failed.values.rate.toFixed(2).replace('.', '') : +http_req_failed.values.rate.toFixed(2).split('.')[1], http_req_failed.values.rate <= desviation_error ? '✅' : '🙅🏼'])
 
   const file = readFileSync(pathMessageTemplate)
 
   let fileString = file.toString()
 
-  messages.map(([tag, value, emoji]) => {
+  arr.map(([tag, value, emoji]) => {
     fileString = replaceTags(tag, value, fileString, emoji)
   })
 
