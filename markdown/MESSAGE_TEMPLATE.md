@@ -17,7 +17,7 @@ Allow desviation of {{ DESVIATION }}%
 Requests Per Second: {{ HTTP_RATE }}
 Total Requests: {{ HTTP_COUNT }}
 Failed Requests: {{ HTTP_FAILED_PASSES }}
-Percentage of Failed Requests: {{ PERCENTAGE_ERROR }}
+Percentage of Failed Requests: {{ PERCENTAGE_ERROR }}%
 
 #### Latency
 

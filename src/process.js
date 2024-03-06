@@ -4,7 +4,9 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 
 const { readFileSync, writeFileSync } = require("fs")
-const { buildMessage } = require("./message")
+const { buildMessage } = require("./message");
+const { resolve } = require('path');
+const { cwd } = require('process');
 
 
 try {
@@ -23,7 +25,7 @@ try {
     baseLatency = JSON.parse(core.getInput('base-latency'));
   }
 
-  const file = readFileSync(inputFileName)
+  const file = readFileSync(resolve(cwd(), inputFileName))
   const result = JSON.parse(file)
 
   const {
@@ -63,4 +65,6 @@ try {
 } catch (error) {
   core.error(error)
   core.error('submit an issue in https://github.com/ramonpaolo/action-benchmark/issue')
+
+  process.exit(1)
 }

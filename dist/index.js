@@ -29054,7 +29054,9 @@ const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 
 const { readFileSync, writeFileSync } = __nccwpck_require__(7147)
-const { buildMessage } = __nccwpck_require__(6807)
+const { buildMessage } = __nccwpck_require__(6807);
+const { resolve } = __nccwpck_require__(1017);
+const { cwd } = __nccwpck_require__(7282);
 
 
 try {
@@ -29073,7 +29075,7 @@ try {
     baseLatency = JSON.parse(core.getInput('base-latency'));
   }
 
-  const file = readFileSync(inputFileName)
+  const file = readFileSync(__nccwpck_require__.ab + "summary.json")
   const result = JSON.parse(file)
 
   const {
@@ -29113,6 +29115,8 @@ try {
 } catch (error) {
   core.error(error)
   core.error('submit an issue in https://github.com/ramonpaolo/action-benchmark/issue')
+
+  process.exit(1)
 }
 
 
