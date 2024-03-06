@@ -1,0 +1,51 @@
+name: Performance Test
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run k6 test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/test_example.js
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          START_DURATION: 20s
+          VUS: 10
+
+      - name: Compare Performance
+        id: benchmark
+        uses: ramonpaolo/action-benchmark@main
+        with:
+          # The name of file of result of tests(K6s)
+          input-file-name: "result.json" # REQUIRED
+          
+          # The name of file to save in local machine
+          output-file-name: # OPTIONAL
+          
+          # The desviation in percentage of acceptable errors
+          desviation-error: # OPTIONAL
+          # default: '0.1'
+          
+          # The desviation in percentage of acceptable latency
+          desviation-latency: # OPTIONAL
+          # default: '0.1'
+          
+          # The base latency to calculate the desviation in ms(milliseconds) of acceptable latency
+          base-latency: # OPTIONAL
+          # default: '{"AVG": 80, "MAX": 100, "MIN": 70, "P90": 80, "P95": 90}'
+
+      - name: Comment in PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: ${{ steps.benchmark.outputs.message }}
