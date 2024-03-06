@@ -6,6 +6,8 @@ Max VUS: {{ MAX_VUS }}
 Min VUS: {{ MIN_VUS }}
 Total time: {{ TOTAL_TIME }}
 
+Allow desviation of {{ DESVIATION }}%
+
 ---
 
 ### Results

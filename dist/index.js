@@ -28975,7 +28975,7 @@ function wrappy (fn, cb) {
 /***/ 6807:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const { readFileSync, writeFileSync } = __nccwpck_require__(7147)
+const { readFileSync } = __nccwpck_require__(7147)
 const { resolve } = __nccwpck_require__(1017)
 const { cwd } = __nccwpck_require__(7282)
 
@@ -28991,25 +28991,26 @@ const replaceTags = (tag, value, file, emoji) => {
   return file.replace(`{{ ${tag} }}`, `${value}`)
 }
 
-const buildMessage = ({ vus, http_reqs, http_req_failed, http_req_duration }) => {
+const buildMessage = ({ vus, http_reqs, http_req_failed, http_req_duration }, { desviation_error, desviation_latency, base_latency, }) => {
   const currentDirectory = cwd()
-  
+
   const pathMessageTemplate = __nccwpck_require__.ab + "MESSAGE_TEMPLATE.md"
 
   const messages = [
     ['MAX_VUS', vus.values.max, null],
     ['MIN_VUS', vus.values.min, null],
     ['TOTAL_TIME', (http_reqs.values.count / http_reqs.values.rate).toFixed(0) + 's', null],
+    ['DESVIATION', desviation_latency * 100, null],
     ['RPS', +http_reqs.values.rate.toFixed(0), null],
     ['TOTAL_REQUESTS', http_reqs.values.count, null],
     ['FAILED_REQUESTS', http_req_failed.values.passes, null],
     ['PERCENTAGE_ERROR', http_req_failed.values.rate == 1
-      ? +http_req_failed.values.rate.toFixed(2).replace('.', '') : +http_req_failed.values.rate.toFixed(2).split('.')[1], null],
-    ['LATENCY_AVG', http_req_duration.values.avg.toFixed(2) + 'ms', null],
-    ['LATENCY_MAX', http_req_duration.values.max.toFixed(2) + 'ms', null],
-    ['LATENCY_MIN', http_req_duration.values.min.toFixed(2) + 'ms', null],
-    ['LATENCY_P90', http_req_duration.values['p(90)'].toFixed(2) + 'ms', null],
-    ['LATENCY_P95', http_req_duration.values['p(95)'].toFixed(2) + 'ms', null],
+      ? +http_req_failed.values.rate.toFixed(2).replace('.', '') : +http_req_failed.values.rate.toFixed(2).split('.')[1], http_req_failed.values.rate <= desviation_error ? '✅' : '🙅🏼'],
+    ['LATENCY_AVG', http_req_duration.values.avg.toFixed(2) + 'ms', http_req_duration.values.avg - (base_latency.avg * desviation_latency) <= base_latency.avg ? '✅' : '🙅🏼'],
+    ['LATENCY_MAX', http_req_duration.values.max.toFixed(2) + 'ms', http_req_duration.values.max - (base_latency.max * desviation_latency) <= base_latency.max ? '✅' : '🙅🏼'],
+    ['LATENCY_MIN', http_req_duration.values.min.toFixed(2) + 'ms', http_req_duration.values.min - (base_latency.min * desviation_latency) <= base_latency.min ? '✅' : '🙅🏼'],
+    ['LATENCY_P90', http_req_duration.values['p(90)'].toFixed(2) + 'ms', http_req_duration.values['p(90)'] - (base_latency['P90'] * desviation_latency) <= base_latency['P90'] ? '✅' : '🙅🏼'],
+    ['LATENCY_P95', http_req_duration.values['p(95)'].toFixed(2) + 'ms', http_req_duration.values['p(95)'] - (base_latency['P95'] * desviation_latency) <= base_latency['P95'] ? '✅' : '🙅🏼'],
   ]
 
   const file = readFileSync(__nccwpck_require__.ab + "MESSAGE_TEMPLATE.md")
@@ -29041,12 +29042,15 @@ const github = __nccwpck_require__(5438);
 const { readFileSync, writeFileSync } = __nccwpck_require__(7147)
 const { buildMessage } = __nccwpck_require__(6807)
 
-// Input Variables
-const inputFileName = core.getInput('input-file-name');
-const outputFileName = core.getInput('output-file-name');
-const sendMessageToPR = core.getBooleanInput('send-message-to-pr');
 
 try {
+  // Input Variables
+  const inputFileName = core.getInput('input-file-name');
+  const outputFileName = core.getInput('output-file-name');
+  const desviationError = +core.getInput('desviation-error');
+  const desviationLatency = +core.getInput('desviation-latency');
+  const baseLatency = JSON.parse(core.getInput('base-latency'));
+
   const file = readFileSync(inputFileName)
   const result = JSON.parse(file)
 
@@ -29057,11 +29061,9 @@ try {
     http_reqs,
   } = result.metrics
 
-  if (sendMessageToPR) {
-    const message = buildMessage(result.metrics)
+  const message = buildMessage(result.metrics, { desviation_error: desviationError, desviation_latency: desviationLatency, base_latency: baseLatency, })
 
-    core.setOutput('message', message)
-  }
+  core.setOutput('message', message)
 
   if (outputFileName) {
     const outputObject = {

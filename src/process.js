@@ -6,12 +6,15 @@ const github = require('@actions/github');
 const { readFileSync, writeFileSync } = require("fs")
 const { buildMessage } = require("./message")
 
-// Input Variables
-const inputFileName = core.getInput('input-file-name');
-const outputFileName = core.getInput('output-file-name');
-const sendMessageToPR = core.getBooleanInput('send-message-to-pr');
 
 try {
+  // Input Variables
+  const inputFileName = core.getInput('input-file-name');
+  const outputFileName = core.getInput('output-file-name');
+  const desviationError = +core.getInput('desviation-error');
+  const desviationLatency = +core.getInput('desviation-latency');
+  const baseLatency = JSON.parse(core.getInput('base-latency'));
+
   const file = readFileSync(inputFileName)
   const result = JSON.parse(file)
 
@@ -22,13 +25,9 @@ try {
     http_reqs,
   } = result.metrics
 
-  if (sendMessageToPR) {
-    core.info(result.metrics)
+  const message = buildMessage(result.metrics, { desviation_error: desviationError, desviation_latency: desviationLatency, base_latency: baseLatency, })
 
-    const message = buildMessage(result.metrics)
-
-    core.setOutput('message', message)
-  }
+  core.setOutput('message', message)
 
   if (outputFileName) {
     const outputObject = {

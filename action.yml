@@ -9,15 +9,20 @@ inputs:
     description: 'The name of file to save in local machine'
     required: false
 
-  send-message-to-pr:
-    description: 'If is to send a commend in the PR about the results'
-    required: true
-    default: 'true'
-
-  desviation:
-    description: 'The desviation in percentage of acceptable throuput'
+  desviation-error:
+    description: 'The desviation in percentage of acceptable errors'
     required: false
-    default: '10'
+    default: '0.1'
+
+  desviation-latency:
+    description: 'The desviation in percentage of acceptable latency'
+    required: false
+    default: '0.1'
+
+  base-latency:
+    description: 'The base in ms(milliseconds) of acceptable latency'
+    required: false
+    default: '{"avg": 80, "max": 100, "min": 70, "P90": 80, "P95": 90}'
 
 outputs:
   message:
