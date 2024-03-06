@@ -1,0 +1,29 @@
+name: 'Compare Performance'
+description: 'Greet someone and record the time'
+inputs:
+  input-file-name: 
+    description: 'The name of file of result of tests(K6s)'
+    required: true
+
+  output-file-name:
+    description: 'The name of file to save in local machine'
+    required: false
+
+  send-message-to-pr:
+    description: 'If is to send a commend in the PR about the results'
+    required: true
+    default: 'true'
+
+  desviation:
+    description: 'The desviation in percentage of acceptable throuput'
+    required: false
+    default: '10'
+
+outputs:
+  message:
+    description: 'The text to send to the pr'
+
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
