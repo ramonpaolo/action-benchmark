@@ -23,6 +23,8 @@ try {
   } = result.metrics
 
   if (sendMessageToPR) {
+    core.info(result.metrics)
+
     const message = buildMessage(result.metrics)
 
     core.setOutput('message', message)

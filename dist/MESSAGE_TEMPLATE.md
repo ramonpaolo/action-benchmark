@@ -1,6 +1,6 @@
-# This PR executed the performance action!
+## Performance Action!
 
-## Scenario Test
+### Scenario Test
 
 Max VUS: {{ MAX_VUS }}
 Min VUS: {{ MIN_VUS }}
@@ -8,9 +8,9 @@ Total time: {{ TOTAL_TIME }}
 
 ---
 
-## Results
+### Results
 
-### Requests
+#### Requests
 
 HTTP Requests Per Second(RPS): {{ RPS }}
 HTTP Total Requests: {{ TOTAL_REQUESTS }}
